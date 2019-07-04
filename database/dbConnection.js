@@ -5,7 +5,7 @@ const mysql = require('mysql');
 const connection = mysql.createConnection(db_config);
 
 module.exports = class DbConnection {
-	static execute (sql = '', callback = (err, rows, fields) => {}) {
+	static execute (sql = '', callback = (err, rows, fields) => {}, params = []) {
 		connection.connect((err) => {
 			if (!err) {
 				console.log('connection established');
@@ -16,7 +16,7 @@ module.exports = class DbConnection {
 		});
 		try {
 			console.log('execute query: ', sql);
-			connection.query(sql, callback);
+			connection.query(sql, params, callback);
 		} catch (err) {
 			throw 'Error in Query\n';
 		} finally {
