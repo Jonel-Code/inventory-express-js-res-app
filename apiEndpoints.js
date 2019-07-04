@@ -58,9 +58,30 @@ const post_inventory_data = function (req, res){
 	// });
 };
 
+const put_inventory_data = function (req, res){
+	const params = req.query;
+	console.log('params', params);
+	if (
+		params.name === undefined ||
+		params.qty === undefined ||
+		params.amount === undefined ||
+		!Number.isInteger(Number(params.amount)) ||
+		!Number.isInteger(Number(params.qty))
+	) {
+		res.status(500).send({ message: 'unfulfilled parameter requirements' });
+	}
+	else {
+		items.create_item(params.name, Number(params.qty), Number(params.amount));
+		res.send({
+			message: 'created',
+		});
+	}
+};
+
 module.exports = class ApiEndpoints {
 	static boostrap (app) {
 		app.get(add_prefix('inventory'), get_inventory_data);
 		app.post(add_prefix('inventory'), post_inventory_data);
+		app.put(add_prefix('inventory'), put_inventory_data);
 	}
 };
