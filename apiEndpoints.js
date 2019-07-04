@@ -18,6 +18,16 @@ const get_inventory_data = function (req, res){
 		});
 };
 
+const get_all_inventory_data = function (req, res){
+	items.get_all_items().then((result = []) => {
+		res.send(
+			result.map((x) => {
+				return x.to_json;
+			}),
+		);
+	});
+};
+
 const post_inventory_data = function (req, res){
 	const params = req.query;
 	if (params.id == undefined) {
@@ -111,5 +121,6 @@ module.exports = class ApiEndpoints {
 		app.post(add_prefix('inventory'), post_inventory_data);
 		app.put(add_prefix('inventory'), put_inventory_data);
 		app.delete(add_prefix('inventory'), delete_inventory_data);
+		app.get(add_prefix('inventory/all'), get_all_inventory_data);
 	}
 };
