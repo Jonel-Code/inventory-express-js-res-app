@@ -81,6 +81,29 @@ module.exports = class Items {
 		}
 	}
 
+	static async get_all_items () {
+		const sql = `SELECT * FROM ${Items._TABLE_SCHEMA.name};`;
+
+		try {
+			return new Promise((resolve, reject) => {
+				const results = [];
+				DbConnection.execute(sql, (err, result) => {
+					if (err) {
+						console.log(err);
+					}
+					for (const value of result) {
+						const item = new Items(value.name, Number(value.qty), Number(value.amount), Number(value.id));
+						results.push(item);
+					}
+					console.log('results.to_json', results.map((x) => x.to_json));
+					resolve(results);
+				});
+			});
+		} catch (err) {
+			return [];
+		}
+	}
+
 	static async find_item (args = { name, qty, amount, id }) {
 		const sql = `SELECT * FROM ${Items._TABLE_SCHEMA.name} `;
 		console.log('args', args);
