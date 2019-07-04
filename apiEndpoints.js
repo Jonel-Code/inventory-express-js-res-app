@@ -45,7 +45,7 @@ const post_inventory_data = function (req, res){
 					for (const item of result) {
 						// name: params.name, qty: params.qty, amount: params.amount,
 						if (params.name != undefined) {
-							item.name = params.name;
+							item.name = String(params.name).trim();
 						}
 						if (params.qty != undefined) {
 							item.qty = Number(params.qty);
@@ -76,16 +76,16 @@ const put_inventory_data = function (req, res){
 	const params = req.query;
 	console.log('params', params);
 	if (
-		params.name === undefined ||
-		params.qty === undefined ||
-		params.amount === undefined ||
-		!Number.isInteger(Number(params.amount)) ||
-		!Number.isInteger(Number(params.qty))
+		params.name !== undefined &&
+		params.qty !== undefined &&
+		params.amount !== undefined &&
+		Number.isNaN(params.amount) &&
+		Number.isNaN(params.qty)
 	) {
 		res.status(500).send({ message: 'unfulfilled parameter requirements' });
 	}
 	else {
-		items.create_item(params.name, Number(params.qty), Number(params.amount));
+		items.create_item(String(params.name).trim(), Number(params.qty), Number(params.amount));
 		res.send({
 			message: 'created',
 		});
