@@ -209,9 +209,10 @@ module.exports = class Items {
 		if (!Number.isInteger(this.id)) {
 			throw 'Error in id: if you are creating a new model please use create_new function';
 		}
-		const query = `delte from ${Items._TABLE_SCHEMA.name} 
+		const query = `delete from ${Items._TABLE_SCHEMA.name} 
                         where id = ${this.id}`;
 		let affected_rows = 0;
+		console.log('delete query', query);
 		try {
 			DbConnection.execute(query, (err, result) => {
 				if (err) {
