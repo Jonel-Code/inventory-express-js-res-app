@@ -200,4 +200,13 @@ module.exports = class Items {
 			return true;
 		}
 	}
+
+	get to_json () {
+		return {
+			id: this.id,
+			name: this.name,
+			qty: this.qty,
+			amount: this.amount,
+		};
+	}
 };
