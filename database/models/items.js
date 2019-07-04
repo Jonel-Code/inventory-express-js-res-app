@@ -8,7 +8,7 @@ module.exports = class Items {
 				id: 'int primary key auto_increment',
 				name: 'varchar(255)not null',
 				qty: 'int not null default 0',
-				amount: 'int not null default 0',
+				amount: 'double not null default 0',
 			},
 		};
 	}
@@ -34,7 +34,7 @@ module.exports = class Items {
 
 	static async create_item (name, qty, amount) {
 		name = name.toLowerCase();
-		const duplicate = await Items.find_item({ name });
+		const duplicate = await Items.find_item({ name, amount });
 		console.log('duplicate', duplicate);
 		// if there is a duplicate in name then update the existing model
 		// add the new value to the old values
@@ -42,7 +42,7 @@ module.exports = class Items {
 			console.log('duplicate detected adding values to the duplicates');
 			for (const item of duplicate) {
 				item.qty += qty;
-				item.amount += amount;
+				// item.amount += amount;
 				item.update();
 			}
 			return duplicate[0];
