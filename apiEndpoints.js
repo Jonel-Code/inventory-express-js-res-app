@@ -82,10 +82,34 @@ const put_inventory_data = function (req, res){
 	}
 };
 
+const delete_inventory_data = function (req, res){
+	const params = req.query;
+	if (params.id == undefined || !Number.isInteger(Number(params.id))) {
+		res.status(409).send({ message: 'id parameter is required' });
+	}
+	else {
+		items
+			.find_item({ id: Number(params.id) })
+			.then((result = []) => {
+				console.log('result', result);
+				for (const item of result) {
+					item.delete();
+				}
+				res.send({ message: 'deleted' });
+			})
+			.catch((x) => {
+				res.send({
+					message: 'error in deleting data',
+				});
+			});
+	}
+};
+
 module.exports = class ApiEndpoints {
 	static boostrap (app) {
 		app.get(add_prefix('inventory'), get_inventory_data);
 		app.post(add_prefix('inventory'), post_inventory_data);
 		app.put(add_prefix('inventory'), put_inventory_data);
+		app.delete(add_prefix('inventory'), delete_inventory_data);
 	}
 };
