@@ -32,33 +32,52 @@ module.exports = class Items {
 		});
 	}
 
-	static create_item (name, qty, amount) {
-		const query = `INSERT INTO ${this._TABLE_SCHEMA.name}(name,qty,amount)
-                        VALUES(?,?)`;
-		const params = [
-			name,
-			qty,
-			amount,
-		];
-		let inserted_id = undefined;
-		try {
-			DbConnection.execute(
-				query,
-				(err, result) => {
-					if (err) {
-						console.log(err);
-					}
-					inserted_id = result.insertId;
-				},
-				params,
-			);
-		} catch (err) {}
-		// avoid zero false
-		if (inserted_id || inserted_id >= 0) {
-			return new Items(name, qty, amount, inserted_id);
+	static async create_item (name, qty, amount) {
+		name = name.toLowerCase();
+		const duplicate = await Items.find_item({ name });
+		console.log('duplicate', duplicate);
+		// if there is a duplicate in name then update the existing model
+		// add the new value to the old values
+		if (duplicate.length > 0) {
+			console.log('duplicate detected adding values to the duplicates');
+			for (const item of duplicate) {
+				item.qty += qty;
+				item.amount += amount;
+				item.update();
+			}
+			return duplicate[0];
 		}
 		else {
-			return undefined;
+			const query = `INSERT INTO ${this._TABLE_SCHEMA.name}(name,qty,amount)
+                        VALUES(?,?,?)`;
+			const params = [
+				name,
+				qty,
+				amount,
+			];
+			let inserted_id = undefined;
+			try {
+				DbConnection.execute(
+					query,
+					(err, result) => {
+						if (err) {
+							console.log(err);
+						}
+						else {
+							console.log('result', result);
+							inserted_id = result.insertId;
+						}
+					},
+					params,
+				);
+			} catch (err) {}
+			// avoid zero false
+			if (inserted_id || inserted_id >= 0) {
+				return new Items(name, qty, amount, inserted_id);
+			}
+			else {
+				return undefined;
+			}
 		}
 	}
 
@@ -113,8 +132,15 @@ module.exports = class Items {
 						}
 
 						for (const value of result) {
-							results.push(new Items(value.name, value.qty, value.amount, value.id));
+							const item = new Items(
+								value.name,
+								Number(value.qty),
+								Number(value.amount),
+								Number(value.id),
+							);
+							results.push(item);
 						}
+						console.log('results.to_json', results.map((x) => x.to_json));
 						resolve(results);
 					},
 					params,
@@ -136,12 +162,13 @@ module.exports = class Items {
 		return this._id;
 	}
 
-	create_new () {
-		return Items.create_item(this.name, this.qty, this.amount);
+	async create_new () {
+		return await Items.create_item(this.name, this.qty, this.amount);
 	}
 
 	update () {
 		if (!Number.isInteger(this.id)) {
+			console.log('this', this._id);
 			throw 'Error in id: if you are creating a new model please use create_new function';
 		}
 		const query = `UPDATE ${Items._TABLE_SCHEMA.name} 
@@ -151,11 +178,12 @@ module.exports = class Items {
                         amount = ? 
                         where id = ${this.id}`;
 		const params = [
-			name,
-			qty,
-			amount,
+			this.name.toLowerCase(),
+			this.qty,
+			this.amount,
 		];
 		let affected_rows = 0;
+
 		try {
 			DbConnection.execute(
 				query,
